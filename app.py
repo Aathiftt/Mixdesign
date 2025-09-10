@@ -1,7 +1,7 @@
 import streamlit as st
 
 st.title("Concrete Mix Design Automation (IS 10262:2019)")
-st.write("Prototype - Initial Phase (without ML & Cost Estimation)")
+st.write("Prototype with Rough Cost Estimation (not using DSR)")
 
 # ---- INPUT SECTION ----
 st.header("Input Parameters")
@@ -24,8 +24,15 @@ sg_fa = st.number_input("Specific Gravity of Fine Aggregate", value=2.65, step=0
 sg_admixture = st.number_input("Specific Gravity of Admixture", value=1.1, step=0.01)
 fa_zone = st.selectbox("Fine Aggregate Zone", ["Zone I", "Zone II", "Zone III", "Zone IV"])
 
+# Rough cost inputs
+st.subheader("Material Costs (User-defined)")
+cost_cement_unit = st.number_input("Cement cost (₹/kg)", value=6.0, step=0.1)
+cost_fa_unit = st.number_input("Fine Aggregate cost (₹/kg)", value=1.0, step=0.1)
+cost_ca_unit = st.number_input("Coarse Aggregate cost (₹/kg)", value=0.8, step=0.1)
+cost_admixture_unit = st.number_input("Admixture cost (₹/kg)", value=50.0, step=1.0)
+
 # ---- PROCESSING SECTION ----
-if st.button("Calculate Mix Design"):
+if st.button("Calculate Mix Design with Cost"):
     st.header("Results")
 
     # Example simple calculations (replace with full IS 10262 steps later)
@@ -56,3 +63,21 @@ if st.button("Calculate Mix Design"):
 
     st.write(f"**Coarse Aggregate**: {ca_content:.2f} kg/m³")
     st.write(f"**Fine Aggregate**: {fa_content:.2f} kg/m³")
+
+    # ---- COST ESTIMATION ----
+    st.subheader("Rough Cost Estimation")
+
+    cost_cement = cement_content * cost_cement_unit
+    cost_fa = fa_content * cost_fa_unit
+    cost_ca = ca_content * cost_ca_unit
+    # Admixture assumed 5 kg/m³ for demo (user can adjust later)
+    admixture_qty = 5  
+    cost_admixture = admixture_qty * cost_admixture_unit
+
+    total_cost = cost_cement + cost_fa + cost_ca + cost_admixture
+
+    st.write(f"Cement Cost: ₹{cost_cement:.2f}")
+    st.write(f"Fine Aggregate Cost: ₹{cost_fa:.2f}")
+    st.write(f"Coarse Aggregate Cost: ₹{cost_ca:.2f}")
+    st.write(f"Admixture Cost: ₹{cost_admixture:.2f}")
+    st.success(f"**Total Cost: ₹{total_cost:.2f} per m³ (rough)**")
