@@ -1,70 +1,58 @@
-def mix_design():
-    print("\n--- Concrete Mix Design Automation (IS 10262:2019) ---\n")
+import streamlit as st
 
-    # --- Step 1: User Inputs ---
-    grade = input("Enter grade designation (e.g., M20, M25, M30): ").strip()
-    cement_type = input("Enter type of cement (OPC/PPC/PSC): ").strip()
-    agg_size = int(input("Enter maximum nominal size of aggregate (10/20/40 mm): "))
-    slump = float(input("Enter desired slump in mm: "))
-    exposure = input("Enter exposure condition (Mild/Moderate/Severe/Very Severe/Extreme): ").strip()
-    placing_method = input("Enter method of concrete placing (Manual/Pumped): ").strip()
-    supervision = input("Enter degree of supervision (Good/Fair/Poor): ").strip()
-    agg_type = input("Enter type of aggregate (Crushed/Rounded): ").strip()
-    admixture_type = input("Enter chemical admixture type (None/Plasticizer/Superplasticizer): ").strip()
+st.title("Concrete Mix Design Automation (IS 10262:2019)")
+st.write("Prototype - Initial Phase (without ML & Cost Estimation)")
 
-    # --- Material Properties ---
-    sp_gr_cement = float(input("Enter specific gravity of cement: "))
-    sp_gr_ca = float(input("Enter specific gravity of coarse aggregate: "))
-    sp_gr_fa = float(input("Enter specific gravity of fine aggregate: "))
-    sp_gr_admixture = float(input("Enter specific gravity of admixture: "))
-    fa_zone = input("Enter fine aggregate zone (Zone I/Zone II/Zone III/Zone IV): ").strip()
+# ---- INPUT SECTION ----
+st.header("Input Parameters")
 
-    # --- Step 2: Target Mean Strength ---
-    fck_values = {"M20": 20, "M25": 25, "M30": 30}
-    sigma_values = {"good": 4.0, "fair": 5.0, "poor": 6.0}
-    k = 1.65
+grade = st.selectbox("Grade Designation", ["M20", "M25", "M30", "M35", "M40"])
+cement_type = st.selectbox("Type of Cement", ["OPC 43", "OPC 53", "PPC", "PSC"])
+max_nominal_size = st.selectbox("Maximum Nominal Size of Aggregate (mm)", [10, 20, 40])
+slump = st.number_input("Workability (Slump in mm)", min_value=25, max_value=150, step=5)
+exposure = st.selectbox("Exposure Condition", ["Mild", "Moderate", "Severe", "Very Severe", "Extreme"])
+placing = st.selectbox("Method of Concrete Placing", ["Pumping", "Manual"])
+supervision = st.selectbox("Degree of Supervision", ["Good", "Fair", "Poor"])
+agg_type = st.selectbox("Type of Aggregate", ["Crushed Angular", "Natural Rounded", "Other"])
+admixture_type = st.selectbox("Type of Chemical Admixture", ["None", "Plasticizer", "Superplasticizer"])
 
-    fck = fck_values.get(grade.upper(), 25)
-    sigma = sigma_values.get(supervision.lower(), 5.0)
-    f_target = fck + k * sigma
-    print(f"\nTarget mean strength = {f_target:.2f} MPa")
+# Material properties
+st.subheader("Material Properties")
+sg_cement = st.number_input("Specific Gravity of Cement", value=3.15, step=0.01)
+sg_ca = st.number_input("Specific Gravity of Coarse Aggregate", value=2.7, step=0.01)
+sg_fa = st.number_input("Specific Gravity of Fine Aggregate", value=2.65, step=0.01)
+sg_admixture = st.number_input("Specific Gravity of Admixture", value=1.1, step=0.01)
+fa_zone = st.selectbox("Fine Aggregate Zone", ["Zone I", "Zone II", "Zone III", "Zone IV"])
 
-    # --- Step 3: Water-Cement Ratio (Simplified) ---
-    wc_ratio_table = {
-        "mild": 0.55, "moderate": 0.50, "severe": 0.45,
-        "very severe": 0.45, "extreme": 0.40
-    }
-    wc_ratio = wc_ratio_table.get(exposure.lower(), 0.50)
-    print(f"Adopted water-cement ratio = {wc_ratio}")
+# ---- PROCESSING SECTION ----
+if st.button("Calculate Mix Design"):
+    st.header("Results")
 
-    # --- Step 4: Water Content ---
-    water_content_table = {10: 208, 20: 186, 40: 165}  # for 50 mm slump
-    base_water = water_content_table.get(agg_size, 186)
-    water = base_water + (slump - 50) * 0.3  # simple correction
-    print(f"Water content = {water:.1f} kg/m³")
+    # Example simple calculations (replace with full IS 10262 steps later)
+    target_mean_strength = {"M20": 26.6, "M25": 31.6, "M30": 38.25,
+                            "M35": 43.25, "M40": 48.25}[grade]
+    st.write(f"**Target Mean Strength**: {target_mean_strength} MPa")
 
-    # --- Step 5: Cement Content ---
-    cement = water / wc_ratio
-    print(f"Cement content = {cement:.1f} kg/m³")
+    # Example water-cement ratio lookup
+    w_c_ratio = {"M20": 0.55, "M25": 0.50, "M30": 0.45,
+                 "M35": 0.40, "M40": 0.35}[grade]
+    st.write(f"**Water-Cement Ratio**: {w_c_ratio}")
 
-    # --- Step 6: Aggregate Proportions ---
-    fa_fraction = 0.35 if fa_zone in ["Zone II", "Zone III"] else 0.30
-    ca_fraction = 1 - fa_fraction
-    print(f"FA fraction = {fa_fraction}, CA fraction = {ca_fraction}")
+    # Example water content selection
+    water_content = {10: 208, 20: 186, 40: 165}[max_nominal_size]
+    # Slump adjustment
+    water_content += max(0, slump - 50) * 0.3
+    st.write(f"**Water Content**: {water_content:.2f} kg/m³")
 
-    # --- Step 7: Mass of Aggregates ---
-    total_agg_mass = 1000 - (cement / sp_gr_cement * 0.315) - water
-    fa = fa_fraction * total_agg_mass * sp_gr_fa
-    ca = ca_fraction * total_agg_mass * sp_gr_ca
+    # Cement content
+    cement_content = water_content / w_c_ratio
+    st.write(f"**Cement Content**: {cement_content:.2f} kg/m³")
 
-    # --- Step 8: Output Mix ---
-    print("\n--- Mix Proportions (per m³) ---")
-    print(f"Cement: {cement:.1f} kg")
-    print(f"Water: {water:.1f} kg")
-    print(f"Fine Aggregate: {fa:.1f} kg")
-    print(f"Coarse Aggregate: {ca:.1f} kg")
-    print(f"Admixture: To be added as per dosage\n")
+    # Coarse & Fine Aggregate proportions (simplified)
+    ca_fraction = 0.62 if max_nominal_size == 20 else 0.66
+    fa_fraction = 1 - ca_fraction
+    ca_content = ca_fraction * 1000
+    fa_content = fa_fraction * 1000
 
-
-# Run the program
-mix_design()
+    st.write(f"**Coarse Aggregate**: {ca_content:.2f} kg/m³")
+    st.write(f"**Fine Aggregate**: {fa_content:.2f} kg/m³")
