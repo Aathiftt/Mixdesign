@@ -65,7 +65,7 @@ if st.button("Calculate Mix Design with Cost"):
     
     # Step 3b: Superplasticizer adjustment
     if admixture_type == "Superplasticizer":
-        water_content *= 0.9
+        water_content *= 0.8
     st.write(f"**Adjusted Water Content**: {water_content:.2f} kg/m³")
 
     # Step 4: Cement content calculation
