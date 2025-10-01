@@ -59,13 +59,20 @@ if st.button("Calculate Mix Design with Cost"):
     predicted_wc_ratio = model.predict(poly.transform([[target_mean_strength]]))[0]
     st.write(f"**Predicted Water-Cement Ratio**: {predicted_wc_ratio:.3f}")
 
-    # Step 3: Water content selection
+    # Step 3: Water content selection (IS 10262 logic)
     water_content_base = {10:208, 20:186, 40:165}[max_nominal_size]
-    water_content = water_content_base + max(0, slump-50)*0.3
-    
-    # Step 3b: Superplasticizer adjustment
+
+    # Slump adjustment: 25–50mm = base; every +25mm => +3%
+    if slump > 50:
+        extra_intervals = (slump - 50) // 25
+        water_content = water_content_base * (1 + 0.03 * extra_intervals)
+    else:
+        water_content = water_content_base
+
+    # Step 3b: Superplasticizer adjustment (reduce water by 20%)
     if admixture_type == "Superplasticizer":
         water_content *= 0.8
+
     st.write(f"**Adjusted Water Content**: {water_content:.2f} kg/m³")
 
     # Step 4: Cement content calculation
