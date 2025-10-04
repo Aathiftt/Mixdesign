@@ -60,13 +60,21 @@ if st.button("Calculate Mix Design with Cost"):
     st.write(f"**Predicted Water-Cement Ratio**: {predicted_wc_ratio:.3f}")
 
     # Step 3: Water content selection
-    water_content_base = {10:208, 20:186, 40:165}[max_nominal_size]
-    water_content = water_content_base + max(0, slump-50)*0.3
-    
-    # Step 3b: Superplasticizer adjustment
-    if admixture_type == "Superplasticizer":
-        water_content *= 0.8
-    st.write(f"**Adjusted Water Content**: {water_content:.2f} kg/m³")
+water_content_base = {10:208, 20:186, 40:165}[max_nominal_size]
+
+# Apply slump correction (3% increase for each 25mm > 50mm)
+if slump > 50:
+    extra_intervals = (slump - 50) // 25  # number of 25mm increments
+    increase_percent = 0.03 * extra_intervals
+    water_content = water_content_base * (1 + increase_percent)
+else:
+    water_content = water_content_base
+
+# Step 3b: Superplasticizer adjustment (max 20% reduction)
+if admixture_type == "Superplasticizer":
+    water_content *= 0.8
+
+st.write(f"**Adjusted Water Content**: {water_content:.2f} kg/m³")
 
     # Step 4: Cement content calculation
     cement_content = water_content / predicted_wc_ratio
