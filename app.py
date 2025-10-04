@@ -20,7 +20,7 @@ agg_type = st.selectbox("Type of Aggregate", ["Crushed Angular", "Natural Rounde
 admixture_type = st.selectbox("Type of Chemical Admixture", ["None", "Plasticizer", "Superplasticizer"])
 fa_zone = st.selectbox("Fine Aggregate Zone", ["Zone I", "Zone II", "Zone III", "Zone IV"])
 
-# Pumpable selection as selectbox (like other inputs)
+# Pumpable selection as selectbox
 pumpable = st.selectbox("Is the concrete pumpable?", ["No", "Yes"])
 
 # Material properties
@@ -129,14 +129,12 @@ if st.button("Calculate Mix Design with Cost"):
     st.write(f"**Coarse Aggregate**: {ca_content:.2f} kg/m³")
     st.write(f"**Fine Aggregate**: {fa_content:.2f} kg/m³")
 
-    # Step 6: Final Mix Ratio C:FA:CA
+    # Step 6: Final Mix Ratio C:FA:CA highlighted like total cost
     fa_ratio = fa_content / cement_content
     ca_ratio = ca_content / cement_content
-    
-    # Highlight and center the final ratio
-    st.markdown(
-        f"<h3 style='text-align: center; color: darkblue;'>Final Mix Ratio (C:FA:CA) = 1 : {fa_ratio:.2f} : {ca_ratio:.2f}</h3>",
-        unsafe_allow_html=True
+    st.success(
+        f"Final Mix Ratio (C:FA:CA) = 1 : {fa_ratio:.2f} : {ca_ratio:.2f}",
+        icon="🔹"
     )
 
     # Step 7: Rough Cost Estimation
