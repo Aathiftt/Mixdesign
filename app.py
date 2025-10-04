@@ -121,8 +121,8 @@ if st.button("Calculate Mix Design with Cost"):
     fa_fraction = 1 - ca_fraction
 
     # Assuming 1000 kg aggregate per m³ (simplified basis)
-    ca_content = ca_fraction * 1000 * sg_ca
-    fa_content = fa_fraction * 1000 * sg_fa
+    ca_content = ca_fraction * 1000 * sg_ca * 0.9
+    fa_content = fa_fraction * 1000 * sg_fa * 0.9
 
     st.write(f"**Adjusted Coarse Aggregate Fraction**: {ca_fraction:.3f}")
     st.write(f"**Adjusted Fine Aggregate Fraction**: {fa_fraction:.3f}")
@@ -134,7 +134,7 @@ if st.button("Calculate Mix Design with Cost"):
     ca_ratio = ca_content / cement_content
     st.success(
         f"Final Mix Ratio (C:FA:CA) = 1 : {fa_ratio:.2f} : {ca_ratio:.2f}",
-        icon="🔹"
+        icon=" "
     )
 
     # Step 7: Rough Cost Estimation
