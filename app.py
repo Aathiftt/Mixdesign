@@ -35,6 +35,12 @@ cost_fa_unit = st.number_input("Fine Aggregate cost (₹/kg)", value=1.0, step=0
 cost_ca_unit = st.number_input("Coarse Aggregate cost (₹/kg)", value=0.8, step=0.1)
 cost_admixture_unit = st.number_input("Admixture cost (₹/kg)", value=50.0, step=1.0)
 
+# Superplasticizer % input (if applicable)
+if admixture_type == "Superplasticizer":
+    sp_percent = st.number_input("Superplasticizer dosage (% of cement by weight)", value=1.0, min_value=0.5, max_value=2.0, step=0.1) / 100
+else:
+    sp_percent = 0
+
 # ---- PROCESSING SECTION ----
 if st.button("Calculate Mix Design with Cost"):
     st.header("Results")
@@ -116,15 +122,24 @@ if st.button("Calculate Mix Design with Cost"):
     st.write(f"**Final Mix Ratio (C:FA:CA)** = 1 : {fa_ratio:.2f} : {ca_ratio:.2f}")
 
     # Step 7: Rough Cost Estimation
-    cost_cement = cement_content*cost_cement_unit
-    cost_fa = fa_content*cost_fa_unit
-    cost_ca = ca_content*cost_ca_unit
-    admixture_qty = 5 if admixture_type!="None" else 0
-    cost_admixture = admixture_qty*cost_admixture_unit
+    cost_cement = cement_content * cost_cement_unit
+    cost_fa = fa_content * cost_fa_unit
+    cost_ca = ca_content * cost_ca_unit
+
+    # Superplasticizer calculation (percentage of cement content)
+    if admixture_type == "Superplasticizer":
+        admixture_qty = cement_content * sp_percent  # kg/m³
+        cost_admixture = admixture_qty * cost_admixture_unit
+        st.write(f"**Superplasticizer Quantity**: {admixture_qty:.2f} kg/m³")
+    else:
+        admixture_qty = 0
+        cost_admixture = 0
+
     total_cost = cost_cement + cost_fa + cost_ca + cost_admixture
 
     st.write(f"Cement Cost: ₹{cost_cement:.2f}")
     st.write(f"Fine Aggregate Cost: ₹{cost_fa:.2f}")
     st.write(f"Coarse Aggregate Cost: ₹{cost_ca:.2f}")
-    st.write(f"Admixture Cost: ₹{cost_admixture:.2f}")
+    if admixture_type == "Superplasticizer":
+        st.write(f"Admixture Cost: ₹{cost_admixture:.2f}")
     st.success(f"**Total Cost: ₹{total_cost:.2f}/m³ (rough estimate)**")
