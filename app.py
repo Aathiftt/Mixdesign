@@ -134,7 +134,7 @@ if st.button("Calculate Mix Design with Cost"):
     ca_ratio = ca_content / cement_content
     st.success(
         f"Final Mix Ratio (C:FA:CA) = 1 : {fa_ratio:.2f} : {ca_ratio:.2f}",
-        icon=" 🔹 "
+        icon="🔹"
     )
 
     # Step 7: Rough Cost Estimation
