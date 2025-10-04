@@ -19,7 +19,9 @@ supervision = st.selectbox("Degree of Supervision", ["Good", "Fair", "Poor"])
 agg_type = st.selectbox("Type of Aggregate", ["Crushed Angular", "Natural Rounded", "Other"])
 admixture_type = st.selectbox("Type of Chemical Admixture", ["None", "Plasticizer", "Superplasticizer"])
 fa_zone = st.selectbox("Fine Aggregate Zone", ["Zone I", "Zone II", "Zone III", "Zone IV"])
-pumpable = st.radio("Is the concrete pumpable?", ["No", "Yes"])
+
+# Pumpable selection as selectbox (like other inputs)
+pumpable = st.selectbox("Is the concrete pumpable?", ["No", "Yes"])
 
 # Material properties
 st.subheader("Material Properties")
@@ -37,9 +39,20 @@ cost_admixture_unit = st.number_input("Admixture cost (₹/kg)", value=50.0, ste
 
 # Superplasticizer % input (if applicable)
 if admixture_type == "Superplasticizer":
-    sp_percent = st.number_input("Superplasticizer dosage (% of cement by weight)", value=1.0, min_value=0.5, max_value=2.0, step=0.1) / 100
+    sp_percent = st.number_input(
+        "Superplasticizer dosage (% of cement by weight)", value=1.0, min_value=0.5, max_value=2.0, step=0.1
+    ) / 100
 else:
     sp_percent = 0
+
+# Center the button using CSS
+st.markdown(
+    """
+    <style>
+    div.stButton > button:first-child {display: block; margin: 0 auto;}
+    </style>
+    """, unsafe_allow_html=True
+)
 
 # ---- PROCESSING SECTION ----
 if st.button("Calculate Mix Design with Cost"):
@@ -119,7 +132,12 @@ if st.button("Calculate Mix Design with Cost"):
     # Step 6: Final Mix Ratio C:FA:CA
     fa_ratio = fa_content / cement_content
     ca_ratio = ca_content / cement_content
-    st.write(f"**Final Mix Ratio (C:FA:CA)** = 1 : {fa_ratio:.2f} : {ca_ratio:.2f}")
+    
+    # Highlight and center the final ratio
+    st.markdown(
+        f"<h3 style='text-align: center; color: darkblue;'>Final Mix Ratio (C:FA:CA) = 1 : {fa_ratio:.2f} : {ca_ratio:.2f}</h3>",
+        unsafe_allow_html=True
+    )
 
     # Step 7: Rough Cost Estimation
     cost_cement = cement_content * cost_cement_unit
