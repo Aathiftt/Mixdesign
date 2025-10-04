@@ -19,6 +19,7 @@ supervision = st.selectbox("Degree of Supervision", ["Good", "Fair", "Poor"])
 agg_type = st.selectbox("Type of Aggregate", ["Crushed Angular", "Natural Rounded", "Other"])
 admixture_type = st.selectbox("Type of Chemical Admixture", ["None", "Plasticizer", "Superplasticizer"])
 fa_zone = st.selectbox("Fine Aggregate Zone", ["Zone I", "Zone II", "Zone III", "Zone IV"])
+pumpable = st.radio("Is the concrete pumpable?", ["No", "Yes"])
 
 # Material properties
 st.subheader("Material Properties")
@@ -63,7 +64,7 @@ if st.button("Calculate Mix Design with Cost"):
 
     # Apply slump correction (3% increase for each 25mm > 50mm)
     if slump > 50:
-        extra_intervals = (slump - 50) // 25  # number of 25mm increments
+        extra_intervals = (slump - 50) // 25
         increase_percent = 0.03 * extra_intervals
         water_content = water_content_base * (1 + increase_percent)
     else:
@@ -87,10 +88,14 @@ if st.button("Calculate Mix Design with Cost"):
     }
     ca_fraction = ca_volume_table[max_nominal_size][fa_zone]
 
-    # Step 5b: Adjustment for water-cement ratio (±0.01 for every ±0.05 change)
+    # Step 5a: Adjustment for water-cement ratio (±0.01 for every ±0.05 change)
     delta_wc = predicted_wc_ratio - 0.50
     adjustment = (delta_wc / 0.05) * 0.01
-    ca_fraction = ca_fraction - adjustment  # reduce if w/c > 0.5, increase if < 0.5
+    ca_fraction = ca_fraction - adjustment  
+
+    # Step 5b: Adjustment for pumpable concrete (reduce CA volume by 10%)
+    if pumpable == "Yes":
+        ca_fraction *= 0.90
 
     # Ensure ca_fraction remains valid
     ca_fraction = max(0, min(ca_fraction, 1))
