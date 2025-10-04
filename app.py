@@ -59,7 +59,7 @@ if st.button("Calculate Mix Design with Cost"):
     predicted_wc_ratio = model.predict(poly.transform([[target_mean_strength]]))[0]
     st.write(f"**Predicted Water-Cement Ratio**: {predicted_wc_ratio:.3f}")
 
-    # Step 3: Water content selection
+    # Step 3: Water content selection (IS 10262:2019 Table)
     water_content_base = {10:208, 20:186, 40:165}[max_nominal_size]
 
     # Apply slump correction (3% increase for each 25mm > 50mm)
@@ -80,20 +80,27 @@ if st.button("Calculate Mix Design with Cost"):
     cement_content = water_content / predicted_wc_ratio
     st.write(f"**Cement Content**: {cement_content:.2f} kg/m³")
 
-    # Step 5b: Pumpable concrete adjustment
+    # Step 5: Aggregate proportioning using Table 5
+    ca_volume_table = {
+        10: {"Zone I": 0.48, "Zone II": 0.50, "Zone III": 0.52, "Zone IV": 0.54},
+        20: {"Zone I": 0.60, "Zone II": 0.62, "Zone III": 0.64, "Zone IV": 0.66},
+        40: {"Zone I": 0.69, "Zone II": 0.71, "Zone III": 0.72, "Zone IV": 0.73},
+    }
+    ca_fraction = ca_volume_table[max_nominal_size][fa_zone]
+    fa_fraction = 1 - ca_fraction
+
+    # Assuming 1000 kg aggregate per m³ (simplified basis)
+    ca_content = ca_fraction * 1000
+    fa_content = fa_fraction * 1000
+    
+    st.write(f"**Coarse Aggregate**: {ca_content:.2f} kg/m³")
+    st.write(f"**Fine Aggregate**: {fa_content:.2f} kg/m³")
+
+    # Step 6: Pumpable concrete adjustment
     if placing=="Pumping":
         water_content += 10
         cement_content = water_content / predicted_wc_ratio
         st.write(f"**Adjusted Cement Content for Pumping**: {cement_content:.2f} kg/m³")
-
-    # Step 6: Mix calculation (simplified)
-    ca_fraction = 0.62 if max_nominal_size==20 else 0.66
-    fa_fraction = 1 - ca_fraction
-    ca_content = ca_fraction*1000
-    fa_content = fa_fraction*1000
-    
-    st.write(f"**Coarse Aggregate**: {ca_content:.2f} kg/m³")
-    st.write(f"**Fine Aggregate**: {fa_content:.2f} kg/m³")
 
     # Step 7: Final Mix Ratio C:FA:CA
     fa_ratio = fa_content / cement_content
