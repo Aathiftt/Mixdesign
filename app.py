@@ -15,10 +15,10 @@ cement_type = st.selectbox("Type of Cement", ["OPC 33", "OPC 43", "OPC 53"])
 max_nominal_size = st.selectbox("Maximum Nominal Size of Aggregate (mm)", [10, 20, 40])
 slump = st.number_input("Workability (Slump in mm)", min_value=25, max_value=150, step=5)
 exposure = st.selectbox("Exposure Condition", ["Mild", "Moderate", "Severe", "Very Severe", "Extreme"])
-placing = st.selectbox("Method of Concrete Placing", ["Manual", "Pumping"])
 supervision = st.selectbox("Degree of Supervision", ["Good", "Fair", "Poor"])
 agg_type = st.selectbox("Type of Aggregate", ["Crushed Angular", "Natural Rounded", "Other"])
 admixture_type = st.selectbox("Type of Chemical Admixture", ["None", "Plasticizer", "Superplasticizer"])
+fa_zone = st.selectbox("Fine Aggregate Zone", ["Zone I", "Zone II", "Zone III", "Zone IV"])
 
 # Material properties
 st.subheader("Material Properties")
@@ -26,7 +26,6 @@ sg_cement = st.number_input("Specific Gravity of Cement", value=3.15, step=0.01)
 sg_ca = st.number_input("Specific Gravity of Coarse Aggregate", value=2.7, step=0.01)
 sg_fa = st.number_input("Specific Gravity of Fine Aggregate", value=2.65, step=0.01)
 sg_admixture = st.number_input("Specific Gravity of Admixture", value=1.1, step=0.01)
-fa_zone = st.selectbox("Fine Aggregate Zone", ["Zone I", "Zone II", "Zone III", "Zone IV"])
 
 # Material costs
 st.subheader("Material Costs (User-defined)")
@@ -43,7 +42,7 @@ if st.button("Calculate Mix Design with Cost"):
     target_mean_strength = {"M20":26.6,"M25":31.6,"M30":38.25,"M35":43.25,"M40":48.25}[grade]
     st.write(f"**Target Mean Strength**: {target_mean_strength} MPa")
 
-    # Step 2: Water-cement ratio selection using 3 curves
+    # Step 2: Water-cement ratio selection using regression curves
     cement_curve_map = {"OPC 33":"Curve_1","OPC 43":"Curve_2","OPC 53":"Curve_3"}
     curve_sheet = cement_curve_map[cement_type]
     
@@ -87,27 +86,31 @@ if st.button("Calculate Mix Design with Cost"):
         40: {"Zone I": 0.69, "Zone II": 0.71, "Zone III": 0.72, "Zone IV": 0.73},
     }
     ca_fraction = ca_volume_table[max_nominal_size][fa_zone]
+
+    # Step 5b: Adjustment for water-cement ratio (±0.01 for every ±0.05 change)
+    delta_wc = predicted_wc_ratio - 0.50
+    adjustment = (delta_wc / 0.05) * 0.01
+    ca_fraction = ca_fraction - adjustment  # reduce if w/c > 0.5, increase if < 0.5
+
+    # Ensure ca_fraction remains valid
+    ca_fraction = max(0, min(ca_fraction, 1))
     fa_fraction = 1 - ca_fraction
 
     # Assuming 1000 kg aggregate per m³ (simplified basis)
     ca_content = ca_fraction * 1000
     fa_content = fa_fraction * 1000
-    
+
+    st.write(f"**Adjusted Coarse Aggregate Fraction**: {ca_fraction:.3f}")
+    st.write(f"**Adjusted Fine Aggregate Fraction**: {fa_fraction:.3f}")
     st.write(f"**Coarse Aggregate**: {ca_content:.2f} kg/m³")
     st.write(f"**Fine Aggregate**: {fa_content:.2f} kg/m³")
 
-    # Step 6: Pumpable concrete adjustment
-    if placing=="Pumping":
-        water_content += 10
-        cement_content = water_content / predicted_wc_ratio
-        st.write(f"**Adjusted Cement Content for Pumping**: {cement_content:.2f} kg/m³")
-
-    # Step 7: Final Mix Ratio C:FA:CA
+    # Step 6: Final Mix Ratio C:FA:CA
     fa_ratio = fa_content / cement_content
     ca_ratio = ca_content / cement_content
     st.write(f"**Final Mix Ratio (C:FA:CA)** = 1 : {fa_ratio:.2f} : {ca_ratio:.2f}")
 
-    # Step 8: Rough Cost Estimation
+    # Step 7: Rough Cost Estimation
     cost_cement = cement_content*cost_cement_unit
     cost_fa = fa_content*cost_fa_unit
     cost_ca = ca_content*cost_ca_unit
