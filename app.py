@@ -121,8 +121,8 @@ if st.button("Calculate Mix Design with Cost"):
     fa_fraction = 1 - ca_fraction
 
     # Assuming 1000 kg aggregate per m³ (simplified basis)
-    ca_content = ca_fraction * 1000 * sg_ca * 0.9
-    fa_content = fa_fraction * 1000 * sg_fa * 0.9
+    ca_content = ca_fraction * 1000 * sg_ca * 0.8
+    fa_content = fa_fraction * 1000 * sg_fa * 0.8
 
     st.write(f"**Adjusted Coarse Aggregate Fraction**: {ca_fraction:.3f}")
     st.write(f"**Adjusted Fine Aggregate Fraction**: {fa_fraction:.3f}")
